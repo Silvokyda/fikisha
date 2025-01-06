@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fikisha - Driver Registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+
+    <!-- Add SweetAlert for better notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --accent-color: #45B7AF;
+            --dark-color: #2C3E50;
+            --light-color: #ECF0F1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-size: 3rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .tagline {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            background-color: var(--light-color);
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 30px;
+            margin: 0 0.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .step i {
+            margin-right: 0.5rem;
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .form-section {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .form-section h2 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .form-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            outline: none;
+        }
+
+        .document-upload {
+            border: 2px dashed var(--secondary-color);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .document-upload:hover {
+            background-color: rgba(78, 205, 196, 0.1);
+        }
+
+        .document-upload i {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #nextBtn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #prevBtn {
+            background-color: var(--dark-color);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .error {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+            }
+
+            .progress-steps {
+                padding: 1rem;
+            }
+
+            .step {
+                font-size: 0.9rem;
+                padding: 0.8rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+        }
+
+        .required-field::after {
+            content: '*';
+            color: var(--primary-color);
+            margin-left: 4px;
+        }
+
+        .optional-field::after {
+            content: '(optional)';
+            color: #666;
+            font-size: 0.8em;
+            margin-left: 4px;
+        }
+
+        /* Add loading spinner styles */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Add styles for file upload progress */
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: #f0f0f0;
+            margin-top: 8px;
+            border-radius: 2px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--secondary-color);
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logo-container">
+        <h1 class="logo">Fikisha</h1>
+        <p class="tagline">Join Our Delivery Partner Network</p>
+    </div>
+
+    <div class="container">
+        <div class="progress-steps">
+            <div class="step active">
+                <i class="fas fa-user"></i> Personal Info
+            </div>
+            <div class="step">
+                <i class="fas fa-car"></i> Vehicle Info
+            </div>
+            <div class="step">
+                <i class="fas fa-file-alt"></i> Documents
+            </div>
+        </div>
+
+        <div class="form-content">
+            <form id="driverRegistrationForm">
+                <!-- Personal Information -->
+                <div class="form-section" id="personalInfo">
+                    <h2>Personal Information</h2>
+                    <div class="form-group">
+                        <label for="fullName" class="required-field">Full Name (as per ID)</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="idNumber" class="required-field">ID Number</label>
+                        <input type="text" id="idNumber" placeholder="National ID Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="required-field">Email Address</label>
+                        <input type="email" id="email" placeholder="your.email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone" class="required-field">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="e.g., +254700000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="altPhone" class="optional-field">Alternative Phone</label>
+                        <input type="tel" id="altPhone" placeholder="Alternative contact number">
+                    </div>
+                    <div class="form-group">
+                        <label for="dob" class="required-field">Date of Birth</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address" class="required-field">Physical Address</label>
+                        <input type="text" id="address" placeholder="Your current residence" required>
+                    </div>
+                </div>
+
+                <!-- Vehicle Information -->
+                <div class="form-section" id="vehicleInfo" style="display: none;">
+                    <h2>Vehicle Information</h2>
+                    <div class="form-group">
+                        <label for="vehicleType" class="required-field">Vehicle Type</label>
+                        <select id="vehicleType" required>
+                            <option value="">Select your vehicle type</option>
+                            <option value="motorcycle">Motorcycle</option>
+                            <option value="car">Car</option>
+                            <option value="van">Van</option>
+                            <option value="truck">Truck</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vehicleModel" class="required-field">Vehicle Model</label>
+                        <input type="text" id="vehicleModel" placeholder="e.g., Toyota Corolla" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="vehicleYear" class="required-field">Vehicle Year</label>
+                        <input type="number" id="vehicleYear" min="1990" max="2025" placeholder="e.g., 2020" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="licensePlate" class="required-field">License Plate Number</label>
+                        <input type="text" id="licensePlate" placeholder="e.g., KAA 123A" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="insuranceProvider" class="required-field">Insurance Provider</label>
+                        <input type="text" id="insuranceProvider" placeholder="Your insurance company" required>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div class="form-section" id="documents" style="display: none;">
+                    <h2>Required Documents</h2>
+                    <div class="form-group">
+                        <label class="required-field">National ID (Front & Back)</label>
+                        <div class="document-upload">
+                            <i class="fas fa-upload"></i>
+                            <p>Upload clear photos of both sides</p>
+                            <input type="file" id="nationalId" accept="image/*" multiple required>
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required-field">Driver's License</label>
+                        <div class="document-upload">
+                            <i class="fas fa-upload"></i>
+                            <p>Upload both sides of your license</p>
+                            <input type="file" id="driverLicense" accept="image/*" multiple required>
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required-field">Police Clearance Certificate</label>
+                        <div class="document-upload">
+                            <i class="fas fa-upload"></i>
+                            <p>Upload Certificate of Good Conduct</p>
+                            <input type="file" id="policeClearance" accept="image/*,.pdf" required>
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required-field">Vehicle Registration</label>
+                        <div class="document-upload">
+                            <i class="fas fa-upload"></i>
+                            <p>Upload vehicle logbook</p>
+                            <input type="file" id="vehicleRegistration" accept="image/*,.pdf" required>
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required-field">Insurance Certificate</label>
+                        <div class="document-upload">
+                            <i class="fas fa-upload"></i>
+                            <p>Upload valid insurance certificate</p>
+                            <input type="file" id="insurance" accept="image/*,.pdf" required>
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" id="prevBtn" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button type="button" id="nextBtn">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase initialization
+        function initializeFirebase() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyB7VvQGZUUv32ivFyNt56YzK1UkAj1ctAM",
+                authDomain: "fikisha-28cee.firebaseapp.com",
+                projectId: "fikisha-28cee",
+                storageBucket: "fikisha-28cee.firebasestorage.app",
+                messagingSenderId: "267815568698",
+                appId: "1:267815568698:web:7a11e2ff70e160d50a7c03",
+                measurementId: "G-09G0L0GMXF"
+            };
+    
+            console.log('Initializing Firebase...');
+            console.log(firebaseConfig);
+    
+            const app = firebase.initializeApp(firebaseConfig);
+            const firestore = firebase.firestore(app);
+            const storage = firebase.storage(app);
+            firebase.initializeApp(firebaseConfig);
+        }
+    
+        // Merged form navigation logic
+        let currentStep = 0;
+        const sections = ['personalInfo', 'vehicleInfo', 'documents'];
+        const steps = document.querySelectorAll('.step');
+    
+        function showStep(step) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sections[step]).style.display = 'block';
+    
+            steps.forEach((s, index) => {
+                if (index === step) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+    
+            document.getElementById('prevBtn').style.display = step === 0 ? 'none' : 'block';
+            document.getElementById('nextBtn').innerHTML = step === sections.length - 1 ?
+                '<i class="fas fa-check"></i> Submit' :
+                'Next <i class="fas fa-arrow-right"></i>';
+        }
+    
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentStep < sections.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            } else {
+                submitForm();
+            }
+        });
+    
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    
+        async function submitForm() {
+            try {
+                // Show loading state
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.innerHTML = '<div class="loading-spinner"></div>Submitting...';
+                nextBtn.disabled = true;
+    
+                // Collect form data
+                const formData = {
+                    personalInfo: {
+                        fullName: document.getElementById('fullName').value,
+                        idNumber: document.getElementById('idNumber').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value,
+                        altPhone: document.getElementById('altPhone').value || null,
+                        dob: document.getElementById('dob').value,
+                        address: document.getElementById('address').value,
+                        submissionDate: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending'
+                    },
+                    vehicleInfo: {
+                        type: document.getElementById('vehicleType').value,
+                        model: document.getElementById('vehicleModel').value,
+                        year: document.getElementById('vehicleYear').value,
+                        licensePlate: document.getElementById('licensePlate').value,
+                        insuranceProvider: document.getElementById('insuranceProvider').value
+                    },
+                    documents: {}
+                };
+    
+                // Upload documents
+                const documents = [
+                    { id: 'nationalId', name: 'National ID' },
+                    { id: 'driverLicense', name: 'Driver License' },
+                    { id: 'policeClearance', name: 'Police Clearance' },
+                    { id: 'vehicleRegistration', name: 'Vehicle Registration' },
+                    { id: 'insurance', name: 'Insurance Certificate' }
+                ];
+    
+                for (const doc of documents) {
+                    const file = document.getElementById(doc.id).files[0];
+                    if (file) {
+                        const storageRef = firebase.storage().ref(`driver-documents/${formData.personalInfo.idNumber}/${doc.id}`);
+                        await storageRef.put(file);
+                        const downloadUrl = await storageRef.getDownloadURL();
+                        formData.documents[doc.id] = downloadUrl;
+                    }
+                }
+    
+                // Save to Firestore
+                await firebase.firestore().collection('driver-applications').add(formData);
+    
+                // Notify user of success
+                Swal.fire('Success!', 'Your application has been submitted.', 'success');
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                Swal.fire('Error', 'There was an issue submitting your application. Please try again later.', 'error');
+            } finally {
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+            }
+        }
+    
+        // Initialize Firebase once the page loads
+        window.onload = initializeFirebase;
+    </script>
+
+</body>
+
+</html>
