@@ -1,7 +1,7 @@
 [
     {
-      "origin": ["*"],
-      "method": ["GET", "POST", "PUT"],
+      "origin": ["http://localhost:3000", "https://fikisha-28cee.web.app"],
+      "method": ["GET", "POST", "OPTIONS"],
       "maxAgeSeconds": 3600
     }
   ]
